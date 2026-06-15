@@ -31,13 +31,24 @@ This repository contains scripts and manifests to build a custom CentOS Stream 9
 
 ## Quick Start
 
+### Step 0: Check Prerequisites (Recommended)
+
+```bash
+chmod +x check-prereqs.sh
+./check-prereqs.sh
+```
+
+This script checks for all required tools and common issues.
+
 ### Step 1: Verify virt-builder has CentOS Stream 9
 
 ```bash
-virt-builder --list | grep centos-stream-9
+virt-builder --list | grep centosstream
 ```
 
-You should see `centos-stream-9` in the list.
+You should see `centosstream-9` in the list.
+
+**Important:** The image name is `centosstream-9` (no hyphen between centos and stream).
 
 ### Step 2: (Optional) Get a Red Hat Logo
 
@@ -115,6 +126,7 @@ echo "https://$(oc get route centos-stream-9-httpd-test -o jsonpath='{.spec.host
 
 ## Files Description
 
+- `check-prereqs.sh` - Checks for required tools and common configuration issues
 - `build-custom-rhel9.sh` - Builds the custom CentOS Stream 9 qcow2 image using virt-builder
 - `cloud-init-userdata.yaml` - Cloud-init configuration for httpd setup (reference)
 - `Dockerfile` - Container image definition for containerDisk
@@ -151,6 +163,44 @@ resources:
 ```
 
 ## Troubleshooting
+
+### libguestfs Permission Error
+
+If you get an error like:
+```
+virt-resize: error: libguestfs error: could not create appliance through libvirt.
+Original error from libvirt: Cannot access storage file
+```
+
+**Fix:** The script already sets `LIBGUESTFS_BACKEND=direct`, but if you still have issues:
+
+```bash
+# Run with direct backend (no libvirt)
+export LIBGUESTFS_BACKEND=direct
+./build-custom-rhel9.sh
+
+# OR add your user to the libvirt group
+sudo usermod -a -G libvirt $(whoami)
+newgrp libvirt
+
+# OR run with sudo (if necessary)
+sudo ./build-custom-rhel9.sh
+```
+
+### SELinux Issues
+
+If SELinux is blocking virt-builder:
+
+```bash
+# Temporarily set SELinux to permissive
+sudo setenforce 0
+./build-custom-rhel9.sh
+sudo setenforce 1
+
+# Or create proper SELinux policy
+sudo ausearch -c 'qemu-system-x86' --raw | audit2allow -M my-virtbuilder
+sudo semodule -i my-virtbuilder.pp
+```
 
 ### Check VM Status
 

@@ -9,6 +9,9 @@ IMAGE_VERSION="1.0"
 OUTPUT_IMAGE="${IMAGE_NAME}.qcow2"
 REGISTRY="quay.io/$(whoami)"  # Change this to your registry
 
+# Fix libguestfs permissions issue
+export LIBGUESTFS_BACKEND=direct
+
 echo "========================================="
 echo "Building Custom CentOS Stream 9 Image"
 echo "========================================="
@@ -17,7 +20,7 @@ echo "========================================="
 if command -v virt-builder &> /dev/null; then
     echo "Using virt-builder method..."
 
-    virt-builder centos-stream-9 \
+    virt-builder centosstream-9 \
         --format qcow2 \
         --size 30G \
         --root-password password:redhat \
