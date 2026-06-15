@@ -53,6 +53,9 @@ spec:
                 - qemu-guest-agent
               runcmd:
                 - systemctl enable --now qemu-guest-agent
+                - firewall-cmd --permanent --add-service=http
+                - firewall-cmd --permanent --add-service=https
+                - firewall-cmd --reload
                 - systemctl enable --now httpd
   dataVolumeTemplates:
     - metadata:

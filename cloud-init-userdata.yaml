@@ -19,6 +19,11 @@ runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
 
+  # Configure firewall for httpd
+  - firewall-cmd --permanent --add-service=http
+  - firewall-cmd --permanent --add-service=https
+  - firewall-cmd --reload
+
   # Configure httpd
   - systemctl enable httpd
 

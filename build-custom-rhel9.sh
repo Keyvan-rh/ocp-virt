@@ -20,15 +20,16 @@ echo "========================================="
 if command -v virt-builder &> /dev/null; then
     echo "Using virt-builder method..."
 
+    # Note: Firewall is NOT configured here because firewall-cmd requires dbus
+    # which isn't available during virt-builder. Instead, it's configured at
+    # boot time via cloud-init (see cloud-init-userdata.yaml or test-vm.yaml)
     virt-builder centosstream-9 \
         --format qcow2 \
         --size 30G \
         --root-password password:redhat \
         --hostname centos-stream-9-httpd \
-        --install httpd,qemu-guest-agent,cloud-init \
-        --run-command 'systemctl enable httpd qemu-guest-agent' \
-        --run-command 'firewall-cmd --permanent --add-service=http' \
-        --run-command 'firewall-cmd --permanent --add-service=https' \
+        --install httpd,qemu-guest-agent,cloud-init,firewalld \
+        --run-command 'systemctl enable httpd qemu-guest-agent firewalld' \
         --mkdir /var/www/html \
         --write '/var/www/html/index.html:<!DOCTYPE html>
 <html>

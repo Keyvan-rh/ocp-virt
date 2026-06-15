@@ -164,6 +164,16 @@ resources:
 
 ## Troubleshooting
 
+### firewall-cmd / dbus Error
+
+If you get an error like:
+```
+Error: DBUS_ERROR: Failed to connect to socket /run/dbus/system_bus_socket
+virt-builder: error: firewall-cmd --permanent --add-service=http: command exited with an error
+```
+
+**Fix:** This is already fixed in the current version. The firewall is configured at boot time via cloud-init, not during image build. If you're seeing this, make sure you have the latest version of `build-custom-rhel9.sh`.
+
 ### libguestfs Permission Error
 
 If you get an error like:
