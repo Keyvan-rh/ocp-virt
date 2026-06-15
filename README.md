@@ -70,6 +70,19 @@ This downloads CentOS Stream 9 and creates `centos-stream-9-httpd-custom.qcow2`.
 
 **Note:** First run will download the base image (~800MB), subsequent runs will be faster.
 
+### Step 3a: Verify the Image (Optional but Recommended)
+
+```bash
+chmod +x verify-image.sh
+./verify-image.sh
+```
+
+This checks that the image has:
+- Bootloader (GRUB2) properly configured
+- Kernel and initramfs present
+- Required packages installed
+- Web content in place
+
 ### Step 4: Build Container Image
 
 ```bash
@@ -128,6 +141,7 @@ echo "https://$(oc get route centos-stream-9-httpd-test -o jsonpath='{.spec.host
 
 - `check-prereqs.sh` - Checks for required tools and common configuration issues
 - `build-custom-rhel9.sh` - Builds the custom CentOS Stream 9 qcow2 image using virt-builder
+- `verify-image.sh` - Verifies the built image has bootloader, kernel, and packages
 - `cloud-init-userdata.yaml` - Cloud-init configuration for httpd setup (reference)
 - `Dockerfile` - Container image definition for containerDisk
 - `build-container.sh` - Builds the container disk image
@@ -162,7 +176,91 @@ resources:
     cpu: 4       # Increase CPUs
 ```
 
+## Manual Upload to OpenShift (Alternative to Container Registry)
+
+If you want to upload the qcow2 directly instead of using a container registry:
+
+### Option 1: Upload via Web Console
+
+1. Navigate to **Virtualization** → **Boot sources**
+2. Click **Add boot source to catalog**
+3. Select **Upload local file**
+4. Choose your `centos-stream-9-httpd-custom.qcow2`
+5. Wait for upload to complete
+
+**Important:** Make sure the DataVolume is created with `contentType: kubevirt` for proper boot detection.
+
+### Option 2: Create DataVolume with HTTP Source
+
+If you have the qcow2 on a web server:
+
+```yaml
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: centos-stream-9-httpd-custom
+  namespace: openshift-virtualization-os-images
+spec:
+  source:
+    http:
+      url: "http://your-server/centos-stream-9-httpd-custom.qcow2"
+  pvc:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: 30Gi
+    storageClassName: ocs-storagecluster-ceph-rbd
+```
+
+### Option 3: Upload via virtctl
+
+```bash
+# Upload the image
+virtctl image-upload dv centos-stream-9-custom \
+  --size=30Gi \
+  --image-path=centos-stream-9-httpd-custom.qcow2 \
+  --namespace=openshift-virtualization-os-images \
+  --storage-class=ocs-storagecluster-ceph-rbd \
+  --insecure
+```
+
 ## Troubleshooting
+
+### Image Not Bootable
+
+If the VM doesn't boot after upload:
+
+1. **Verify the image has a bootloader:**
+   ```bash
+   ./verify-image.sh
+   ```
+
+2. **Check GRUB is present:**
+   ```bash
+   virt-ls -a centos-stream-9-httpd-custom.qcow2 /boot/grub2/
+   ```
+
+3. **Rebuild with explicit grub configuration:**
+   ```bash
+   # The build script already runs grub2-mkconfig
+   # If it's still not bootable, check the base image
+   virt-builder --list | grep centosstream-9
+   ```
+
+4. **Test boot locally with QEMU:**
+   ```bash
+   qemu-system-x86_64 -m 2048 \
+     -hda centos-stream-9-httpd-custom.qcow2 \
+     -boot c \
+     -nographic
+   ```
+
+5. **Check VM events in OpenShift:**
+   ```bash
+   oc describe vmi <vm-name>
+   oc logs -n openshift-cnv virt-launcher-<vm-name>
+   ```
 
 ### firewall-cmd / dbus Error
 

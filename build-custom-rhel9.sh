@@ -30,6 +30,7 @@ if command -v virt-builder &> /dev/null; then
         --hostname centos-stream-9-httpd \
         --install httpd,qemu-guest-agent,cloud-init,firewalld \
         --run-command 'systemctl enable httpd qemu-guest-agent firewalld' \
+        --run-command 'grub2-mkconfig -o /boot/grub2/grub.cfg' \
         --mkdir /var/www/html \
         --write '/var/www/html/index.html:<!DOCTYPE html>
 <html>
