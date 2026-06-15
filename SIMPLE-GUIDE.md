@@ -3,14 +3,26 @@
 ## Goal
 Create a bootable qcow2 image with httpd serving a Red Hat logo, then upload it to OpenShift Virtualization.
 
-## Step 1: Download Red Hat Logo
+## Step 1: Get a Red Hat Logo
+
+### Option A: Use the helper script (tries multiple methods)
 
 ```bash
-# Download an official Red Hat logo
-curl -L -o redhat-logo.png "https://www.redhat.com/rhdc/managed-files/styles/wysiwyg_full_width/private/Logo-redhat-color-375.png"
-
-# Or any Red Hat logo you have
+./create-logo.sh
 ```
+
+This will try to:
+1. Create a simple logo with ImageMagick (if installed)
+2. Download from GitHub
+3. Give you manual instructions if both fail
+
+### Option B: Manual download
+
+Just download any Red Hat logo PNG from Google Images and save as `redhat-logo.png`
+
+### Option C: Skip the logo entirely
+
+The build script will work fine without it - the web page just won't show an image.
 
 ## Step 2: Build the Bootable Image
 
