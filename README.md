@@ -2,6 +2,19 @@
 
 This repository contains scripts and manifests to build a custom CentOS Stream 9 boot distribution with Apache httpd pre-installed and configured for OpenShift Virtualization.
 
+---
+
+## 🚀 Quick Start (Simple Upload via UI)
+
+**Want to just build and upload? See [SIMPLE-GUIDE.md](SIMPLE-GUIDE.md)**
+
+The simple guide shows you how to:
+1. Build a bootable qcow2 image with httpd
+2. Upload directly via OpenShift UI (no container registry needed)
+3. Create a VM and access the web server
+
+---
+
 ## Features
 
 - CentOS Stream 9 base image (RHEL 9 compatible)
