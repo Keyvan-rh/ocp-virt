@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rhel9-httpd-test
+  namespace: default
+spec:
+  selector:
+    kubevirt.io/vm: rhel9-httpd-test
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: rhel9-httpd-test
+  namespace: default
+spec:
+  to:
+    kind: Service
+    name: rhel9-httpd-test
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

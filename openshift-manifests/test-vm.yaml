@@ -1,0 +1,68 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: rhel9-httpd-test
+  namespace: default
+  labels:
+    app: rhel9-httpd-test
+    os: rhel9
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: rhel9-httpd-test
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+          rng: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 2
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: rhel9-httpd-test-rootdisk
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              user: cloud-user
+              password: redhat
+              chpasswd:
+                expire: false
+              ssh_pwauth: true
+              packages:
+                - qemu-guest-agent
+              runcmd:
+                - systemctl enable --now qemu-guest-agent
+                - systemctl enable --now httpd
+  dataVolumeTemplates:
+    - metadata:
+        name: rhel9-httpd-test-rootdisk
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: rhel9-httpd-custom
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: 30Gi

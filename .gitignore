@@ -1,0 +1,26 @@
+# Disk images
+*.qcow2
+*.raw
+*.img
+
+# Container build artifacts
+*.tar
+
+# Temporary files
+*.tmp
+*.log
+
+# SSH keys
+*.pem
+*.pub
+id_rsa*
+
+# Downloaded images
+rhel-*.iso
+redhat-logo.png
+*.jpg
+*.jpeg
+*.png
+
+# macOS
+.DS_Store

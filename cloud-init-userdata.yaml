@@ -1,0 +1,95 @@
+#cloud-config
+# Cloud-init configuration for RHEL 9 with httpd
+
+users:
+  - default
+  - name: admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: wheel
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2E... # Add your SSH public key here
+
+packages:
+  - httpd
+  - qemu-guest-agent
+
+runcmd:
+  # Enable and start qemu-guest-agent
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+
+  # Configure httpd
+  - systemctl enable httpd
+
+  # Create simple HTML page
+  - mkdir -p /var/www/html
+  - |
+    cat > /var/www/html/index.html << 'EOF'
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Red Hat Enterprise Linux</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                font-family: 'Red Hat Display', Arial, sans-serif;
+                background-color: #000000;
+                color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+            .container {
+                text-align: center;
+                max-width: 800px;
+            }
+            h1 {
+                color: #ee0000;
+                font-size: 2.5em;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-width: 400px;
+                width: 100%;
+                height: auto;
+                margin: 20px 0;
+            }
+            .info {
+                background-color: #1a1a1a;
+                padding: 20px;
+                border-radius: 8px;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Welcome to Red Hat Enterprise Linux 9</h1>
+            <img src="redhat-logo.png" alt="Red Hat Logo" class="logo">
+            <div class="info">
+                <h2>Custom OpenShift Virtualization Boot Image</h2>
+                <p>This VM is running on OpenShift Virtualization</p>
+                <p>Apache httpd is configured and running</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    EOF
+
+  # Set proper permissions
+  - chown -R apache:apache /var/www/html
+  - chmod -R 755 /var/www/html
+
+  # Configure firewall
+  - firewall-cmd --permanent --add-service=http
+  - firewall-cmd --permanent --add-service=https
+  - firewall-cmd --reload
+
+  # Start httpd
+  - systemctl start httpd
+
+final_message: "RHEL 9 custom image is ready. Apache httpd is running on port 80."
