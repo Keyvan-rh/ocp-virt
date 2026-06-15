@@ -15,74 +15,28 @@ oc start vm <your-vm-name>
 oc get vmi
 ```
 
-## Step 2: Create a Service to Expose Port 80
+## Step 2: Create Service and Route
 
-Create a file `httpd-service.yaml`:
+### Method 1: Use the Template File (Recommended)
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: httpd-vm-service
-  namespace: default  # Change to your namespace
-spec:
-  selector:
-    kubevirt.io/vm: YOUR-VM-NAME  # Change to your actual VM name
-  ports:
-    - name: http
-      protocol: TCP
-      port: 80
-      targetPort: 80
-  type: ClusterIP
-```
-
-Apply it:
-```bash
-oc apply -f httpd-service.yaml
-```
-
-## Step 3: Create a Route to Expose Externally
-
-Create a file `httpd-route.yaml`:
-
-```yaml
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: httpd-vm-route
-  namespace: default  # Change to your namespace
-spec:
-  to:
-    kind: Service
-    name: httpd-vm-service
-  port:
-    targetPort: http
-  tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: Redirect
-```
-
-Apply it:
-```bash
-oc apply -f httpd-route.yaml
-```
-
-## Step 4: Get the URL and Access from Your Laptop
+Edit the template file with your VM name:
 
 ```bash
-# Get the route URL
-oc get route httpd-vm-route -o jsonpath='{.spec.host}'
+# Get your VM name
+oc get vm
 
-# Or print it nicely
-echo "https://$(oc get route httpd-vm-route -o jsonpath='{.spec.host}')"
+# Edit the template
+vi httpd-service-route.yaml
+# Change: vm.kubevirt.io/name: YOUR-VM-NAME
+# To:     vm.kubevirt.io/name: <your-actual-vm-name>
+
+# Apply it
+oc apply -f httpd-service-route.yaml
 ```
 
-Copy the URL and open it in your laptop browser - you should see your web page with the Red Hat logo!
-
-## Quick One-Liner (All in One)
+### Method 2: One-Liner (Replace YOUR-VM-NAME)
 
 ```bash
-# Create service and route in one command
 cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: Service
@@ -90,9 +44,10 @@ metadata:
   name: httpd-vm-service
 spec:
   selector:
-    kubevirt.io/vm: YOUR-VM-NAME
+    vm.kubevirt.io/name: YOUR-VM-NAME
   ports:
     - name: http
+      protocol: TCP
       port: 80
       targetPort: 80
 ---
@@ -109,10 +64,22 @@ spec:
   tls:
     termination: edge
 EOF
+```
 
-# Get the URL
+**IMPORTANT:** The selector must be `vm.kubevirt.io/name: YOUR-VM-NAME` (not `kubevirt.io/vm`)
+
+## Step 4: Get the URL and Access from Your Laptop
+
+```bash
+# Get the route URL
+oc get route httpd-vm-route -o jsonpath='{.spec.host}'
+
+# Or print it nicely
 echo "https://$(oc get route httpd-vm-route -o jsonpath='{.spec.host}')"
 ```
+
+Copy the URL and open it in your laptop browser - you should see your web page with the Red Hat logo!
+
 
 ## Troubleshooting
 
@@ -163,8 +130,10 @@ echo "https://$(oc get route httpd-vm-route -o jsonpath='{.spec.host}')"
 
 ### Connection Timeout
 
-- Check if the VM has the correct label (`kubevirt.io/vm: YOUR-VM-NAME`)
-- Verify the Service selector matches the VM label
+- Check the VM labels: `oc get vmi YOUR-VM-NAME --show-labels`
+- The VM should have label: `vm.kubevirt.io/name=YOUR-VM-NAME`
+- Verify the Service selector matches: `oc get service httpd-vm-service -o yaml | grep -A3 selector`
+- Check endpoints exist: `oc get endpoints httpd-vm-service`
 
 ### Red Hat Logo Not Showing
 

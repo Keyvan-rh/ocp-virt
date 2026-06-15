@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-vm-service
+  namespace: default  # Change to your namespace if needed
+spec:
+  selector:
+    vm.kubevirt.io/name: YOUR-VM-NAME  # CHANGE THIS to your actual VM name
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: httpd-vm-route
+  namespace: default  # Change to your namespace if needed
+spec:
+  to:
+    kind: Service
+    name: httpd-vm-service
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
