@@ -1,12 +1,12 @@
-# Custom RHEL 9 Boot Image for OpenShift Virtualization
+# Custom CentOS Stream 9 Boot Image for OpenShift Virtualization
 
-This repository contains scripts and manifests to build a custom RHEL 9 boot distribution with Apache httpd pre-installed and configured for OpenShift Virtualization.
+This repository contains scripts and manifests to build a custom CentOS Stream 9 boot distribution with Apache httpd pre-installed and configured for OpenShift Virtualization.
 
 ## Features
 
-- RHEL 9 base image
+- CentOS Stream 9 base image (RHEL 9 compatible)
 - Apache httpd pre-installed and auto-starting
-- Simple web page displaying a Red Hat logo
+- Simple web page displaying a Red Hat logo (optional)
 - qemu-guest-agent for VM management
 - cloud-init support
 - Firewall configured for HTTP/HTTPS
@@ -15,13 +15,13 @@ This repository contains scripts and manifests to build a custom RHEL 9 boot dis
 
 ### On Your Build Machine
 
-- RHEL 9 or compatible Linux system
+- RHEL 9, CentOS Stream 9, or compatible Linux system
 - `libguestfs-tools` package installed:
   ```bash
   sudo dnf install libguestfs-tools libguestfs-tools-c
   ```
 - `podman` for building container images
-- Access to a RHEL 9 base image or subscription
+- `virt-builder` will automatically download CentOS Stream 9 base image
 
 ### On OpenShift Cluster
 
@@ -31,29 +31,21 @@ This repository contains scripts and manifests to build a custom RHEL 9 boot dis
 
 ## Quick Start
 
-### Step 1: Get a Red Hat Logo
-
-Download a Red Hat logo image and save it as `redhat-logo.png` in this directory:
+### Step 1: Verify virt-builder has CentOS Stream 9
 
 ```bash
-# Example: Download from Red Hat's brand resources
-# Or use any Red Hat logo you have permission to use
-curl -o redhat-logo.png "https://www.redhat.com/cms/managed-files/styles/max_size/s3/Logo-RedHat-A-Color-CMYK%20%281%29.jpg"
+virt-builder --list | grep centos-stream-9
 ```
 
-### Step 2: Obtain RHEL 9 Base Image
+You should see `centos-stream-9` in the list.
 
-You'll need a RHEL 9 qcow2 image. You can:
+### Step 2: (Optional) Get a Red Hat Logo
 
-**Option A: Download from Red Hat Customer Portal**
+If you want to display a Red Hat logo on the web page:
+
 ```bash
-# Download from https://access.redhat.com/downloads/content/479/ver=/rhel---9/9.x/x86_64/product-software
-# Save as rhel-baseos-9-latest.qcow2
-```
-
-**Option B: Use virt-builder** (if available)
-```bash
-virt-builder --list | grep rhel
+# Download or copy your Red Hat logo to this directory
+# Save it as: redhat-logo.png
 ```
 
 ### Step 3: Build the Custom Image
@@ -63,7 +55,9 @@ chmod +x build-custom-rhel9.sh
 ./build-custom-rhel9.sh
 ```
 
-This creates `rhel9-httpd-custom.qcow2`.
+This downloads CentOS Stream 9 and creates `centos-stream-9-httpd-custom.qcow2`.
+
+**Note:** First run will download the base image (~800MB), subsequent runs will be faster.
 
 ### Step 4: Build Container Image
 
@@ -113,17 +107,17 @@ kubectl apply -f openshift-manifests/service.yaml
 
 ```bash
 # Get the route URL
-oc get route rhel9-httpd-test
+oc get route centos-stream-9-httpd-test
 
 # Access in browser
-echo "https://$(oc get route rhel9-httpd-test -o jsonpath='{.spec.host}')"
+echo "https://$(oc get route centos-stream-9-httpd-test -o jsonpath='{.spec.host}')"
 ```
 
 ## Files Description
 
-- `build-custom-rhel9.sh` - Builds the custom RHEL 9 qcow2 image
-- `cloud-init-userdata.yaml` - Cloud-init configuration for httpd setup
-- `Dockerfile` - Container image definition
+- `build-custom-rhel9.sh` - Builds the custom CentOS Stream 9 qcow2 image using virt-builder
+- `cloud-init-userdata.yaml` - Cloud-init configuration for httpd setup (reference)
+- `Dockerfile` - Container image definition for containerDisk
 - `build-container.sh` - Builds the container disk image
 - `push-image.sh` - Pushes image to registry
 - `openshift-manifests/` - Kubernetes manifests
@@ -163,19 +157,19 @@ resources:
 ```bash
 kubectl get vm
 kubectl get vmi
-kubectl describe vm rhel9-httpd-test
+kubectl describe vm centos-stream-9-httpd-test
 ```
 
 ### Access VM Console
 
 ```bash
-virtctl console rhel9-httpd-test
+virtctl console centos-stream-9-httpd-test
 ```
 
 ### Check Logs
 
 ```bash
-kubectl logs -n openshift-cnv $(kubectl get pods -n openshift-cnv -l kubevirt.io=virt-launcher -o name | grep rhel9-httpd-test)
+kubectl logs -n openshift-cnv $(kubectl get pods -n openshift-cnv -l kubevirt.io=virt-launcher -o name | grep centos-stream-9-httpd-test)
 ```
 
 ### Verify httpd is Running

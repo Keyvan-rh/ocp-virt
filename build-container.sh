@@ -2,7 +2,7 @@
 set -e
 
 # Container Image Builder
-IMAGE_NAME="rhel9-httpd-custom"
+IMAGE_NAME="centos-stream-9-httpd-custom"
 VERSION="1.0"
 REGISTRY="${CONTAINER_REGISTRY:-quay.io/$(whoami)}"  # Override with env var
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${VERSION}"
@@ -15,8 +15,8 @@ echo "Image: $FULL_IMAGE"
 echo ""
 
 # Check if qcow2 image exists
-if [ ! -f "rhel9-httpd-custom.qcow2" ]; then
-    echo "Error: rhel9-httpd-custom.qcow2 not found!"
+if [ ! -f "centos-stream-9-httpd-custom.qcow2" ]; then
+    echo "Error: centos-stream-9-httpd-custom.qcow2 not found!"
     echo "Please run ./build-custom-rhel9.sh first"
     exit 1
 fi

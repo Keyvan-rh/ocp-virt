@@ -2,17 +2,17 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: rhel9-httpd-test
+  name: centos-stream-9-httpd-test
   namespace: default
   labels:
-    app: rhel9-httpd-test
-    os: rhel9
+    app: centos-stream-9-httpd-test
+    os: centos-stream-9
 spec:
   running: true
   template:
     metadata:
       labels:
-        kubevirt.io/vm: rhel9-httpd-test
+        kubevirt.io/vm: centos-stream-9-httpd-test
     spec:
       domain:
         devices:
@@ -39,7 +39,7 @@ spec:
       volumes:
         - name: rootdisk
           dataVolume:
-            name: rhel9-httpd-test-rootdisk
+            name: centos-stream-9-httpd-test-rootdisk
         - name: cloudinitdisk
           cloudInitNoCloud:
             userData: |
@@ -56,11 +56,11 @@ spec:
                 - systemctl enable --now httpd
   dataVolumeTemplates:
     - metadata:
-        name: rhel9-httpd-test-rootdisk
+        name: centos-stream-9-httpd-test-rootdisk
       spec:
         sourceRef:
           kind: DataSource
-          name: rhel9-httpd-custom
+          name: centos-stream-9-httpd-custom
           namespace: openshift-virtualization-os-images
         storage:
           resources:

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-IMAGE_NAME="rhel9-httpd-custom"
+IMAGE_NAME="centos-stream-9-httpd-custom"
 VERSION="1.0"
 REGISTRY="${CONTAINER_REGISTRY:-quay.io/$(whoami)}"
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${VERSION}"
