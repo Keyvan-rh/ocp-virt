@@ -61,22 +61,40 @@ If you want to display a Red Hat logo on the web page:
 
 ### Step 3: Build the Custom Image
 
+**⚠️ IMPORTANT: If you're having bootability issues, use Method 2 (cloud image)**
+
+#### Method 1: Using virt-builder (Original)
+
 ```bash
 chmod +x build-custom-rhel9.sh
 ./build-custom-rhel9.sh
 ```
 
-This downloads CentOS Stream 9 and creates `centos-stream-9-httpd-custom.qcow2`.
+#### Method 2: Using Official CentOS Stream 9 Cloud Image (RECOMMENDED)
 
-**What it does:**
-- Downloads centosstream-9 base image (~800MB first time)
-- Installs and updates kernel with initramfs
-- Installs GRUB2 bootloader (both BIOS and EFI)
-- Installs httpd, qemu-guest-agent, cloud-init, firewalld
-- Creates custom web page
-- Configures services to start on boot
+This method uses the official CentOS Stream 9 cloud image which is guaranteed bootable:
 
-**Note:** The build process includes bootloader verification at the end. If you see warnings about missing kernel/grub, the image won't boot!
+```bash
+chmod +x build-from-cloud-image.sh
+./build-from-cloud-image.sh
+```
+
+**Why use Method 2?**
+- Official cloud image is guaranteed bootable
+- Already has kernel, initramfs, and grub2 properly configured
+- Faster build (no kernel installation needed)
+- More reliable for production use
+
+#### Method 3: Step-by-Step Debug Build
+
+If you want to see exactly what's happening during the build:
+
+```bash
+chmod +x build-custom-rhel9-v2.sh
+./build-custom-rhel9-v2.sh
+```
+
+This will pause and show you verification results before continuing.
 
 ### Step 3a: Verify the Image (Optional but Recommended)
 
