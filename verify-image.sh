@@ -22,10 +22,21 @@ echo ""
 
 echo "2. Checking for bootloader:"
 echo "-------------------"
+
+# List what's actually in /boot/grub2/
+echo "DEBUG: Listing /boot/grub2/ contents:"
+virt-ls -a "$IMAGE" /boot/grub2/ 2>&1 | head -10
+
+echo ""
+echo "DEBUG: Listing /boot/ contents:"
+virt-ls -a "$IMAGE" /boot/ 2>&1 | head -20
+
+echo ""
 if virt-ls -a "$IMAGE" /boot/grub2/ 2>/dev/null | grep -q grub.cfg; then
     echo "✅ GRUB2 configuration found: /boot/grub2/grub.cfg"
 else
     echo "❌ GRUB2 configuration NOT found!"
+    echo "   Files in /boot/grub2/: $(virt-ls -a "$IMAGE" /boot/grub2/ 2>/dev/null | tr '\n' ' ')"
 fi
 
 if virt-ls -a "$IMAGE" /boot/ 2>/dev/null | grep -q vmlinuz; then
@@ -33,6 +44,7 @@ if virt-ls -a "$IMAGE" /boot/ 2>/dev/null | grep -q vmlinuz; then
     echo "✅ Kernel found: /boot/$KERNEL"
 else
     echo "❌ Kernel NOT found!"
+    echo "   Files in /boot/: $(virt-ls -a "$IMAGE" /boot/ 2>/dev/null | tr '\n' ' ')"
 fi
 
 if virt-ls -a "$IMAGE" /boot/ 2>/dev/null | grep -q initramfs; then
@@ -40,6 +52,7 @@ if virt-ls -a "$IMAGE" /boot/ 2>/dev/null | grep -q initramfs; then
     echo "✅ Initramfs found: /boot/$INITRAMFS"
 else
     echo "❌ Initramfs NOT found!"
+    echo "   Files in /boot/: $(virt-ls -a "$IMAGE" /boot/ 2>/dev/null | tr '\n' ' ')"
 fi
 echo ""
 
