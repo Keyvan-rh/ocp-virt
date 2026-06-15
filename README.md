@@ -68,7 +68,15 @@ chmod +x build-custom-rhel9.sh
 
 This downloads CentOS Stream 9 and creates `centos-stream-9-httpd-custom.qcow2`.
 
-**Note:** First run will download the base image (~800MB), subsequent runs will be faster.
+**What it does:**
+- Downloads centosstream-9 base image (~800MB first time)
+- Installs and updates kernel with initramfs
+- Installs GRUB2 bootloader (both BIOS and EFI)
+- Installs httpd, qemu-guest-agent, cloud-init, firewalld
+- Creates custom web page
+- Configures services to start on boot
+
+**Note:** The build process includes bootloader verification at the end. If you see warnings about missing kernel/grub, the image won't boot!
 
 ### Step 3a: Verify the Image (Optional but Recommended)
 

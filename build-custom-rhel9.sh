@@ -23,14 +23,21 @@ if command -v virt-builder &> /dev/null; then
     # Note: Firewall is NOT configured here because firewall-cmd requires dbus
     # which isn't available during virt-builder. Instead, it's configured at
     # boot time via cloud-init (see cloud-init-userdata.yaml or test-vm.yaml)
+
+    echo "Building base image with kernel and bootloader..."
     virt-builder centosstream-9 \
         --format qcow2 \
         --size 30G \
         --root-password password:redhat \
         --hostname centos-stream-9-httpd \
+        --update \
+        --install kernel,grub2,grub2-tools,grub2-efi-x64,shim-x64,efibootmgr \
         --install httpd,qemu-guest-agent,cloud-init,firewalld \
-        --run-command 'systemctl enable httpd qemu-guest-agent firewalld' \
+        --run-command 'dnf install -y dracut dracut-network' \
+        --run-command 'KVER=$(rpm -q kernel --qf "%{VERSION}-%{RELEASE}.%{ARCH}\n" | tail -1); dracut --force --kver $KVER' \
         --run-command 'grub2-mkconfig -o /boot/grub2/grub.cfg' \
+        --run-command 'grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg || true' \
+        --run-command 'systemctl enable httpd qemu-guest-agent firewalld' \
         --mkdir /var/www/html \
         --write '/var/www/html/index.html:<!DOCTYPE html>
 <html>
@@ -90,7 +97,30 @@ if command -v virt-builder &> /dev/null; then
         --selinux-relabel \
         --output "$OUTPUT_IMAGE"
 
+    echo ""
     echo "Image built successfully: $OUTPUT_IMAGE"
+    echo ""
+
+    # Verify bootloader was installed
+    echo "Verifying bootloader installation..."
+    if virt-ls -a "$OUTPUT_IMAGE" /boot/grub2/ 2>/dev/null | grep -q grub.cfg; then
+        echo "✅ GRUB2 configuration found"
+    else
+        echo "⚠️  GRUB2 configuration not found - image may not boot!"
+    fi
+
+    if virt-ls -a "$OUTPUT_IMAGE" /boot/ 2>/dev/null | grep -q vmlinuz; then
+        echo "✅ Kernel found"
+    else
+        echo "⚠️  Kernel not found - image will not boot!"
+    fi
+
+    if virt-ls -a "$OUTPUT_IMAGE" /boot/ 2>/dev/null | grep -q initramfs; then
+        echo "✅ Initramfs found"
+    else
+        echo "⚠️  Initramfs not found - image may not boot!"
+    fi
+    echo ""
 
     # If you have a Red Hat logo, copy it into the image
     if [ -f "redhat-logo.png" ]; then
