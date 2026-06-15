@@ -2,6 +2,9 @@
 
 # Verify the built image is bootable and properly configured
 
+# Fix libguestfs permissions issue - use direct backend
+export LIBGUESTFS_BACKEND=direct
+
 IMAGE="centos-stream-9-httpd-custom.qcow2"
 
 if [ ! -f "$IMAGE" ]; then
