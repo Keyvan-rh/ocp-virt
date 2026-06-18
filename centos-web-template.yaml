@@ -6,6 +6,7 @@ metadata:
   namespace: openshift
   labels:
     template.kubevirt.io/type: base
+    template.kubevirt.io/version: v1alpha1
     os.template.kubevirt.io/centos-stream9: "true"
     workload.template.kubevirt.io/server: "true"
     flavor.template.kubevirt.io/large: "true"
@@ -22,6 +23,19 @@ metadata:
     template.kubevirt.io/editable: |
       /objects[0]/spec/template/spec/domain/cpu/cores
       /objects[0]/spec/template/spec/domain/resources/requests/memory
+    template.kubevirt.io/provider: "Red Hat"
+    template.kubevirt.io/provider-support-level: "Full"
+    template.kubevirt.io/provider-url: "https://github.com/Keyvan-rh/ocp-virt"
+    vm.kubevirt.io/validations: |
+      [
+        {
+          "name": "minimal-required-memory",
+          "path": "jsonpath::.spec.domain.resources.requests.memory",
+          "rule": "integer",
+          "message": "This VM requires more memory.",
+          "min": 16106127360
+        }
+      ]
 objects:
   - apiVersion: kubevirt.io/v1
     kind: VirtualMachine

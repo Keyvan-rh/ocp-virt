@@ -1,0 +1,16 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataSource
+metadata:
+  name: centos-web
+  namespace: openshift-virtualization-os-images
+  labels:
+    instancetype.kubevirt.io/default-instancetype: u1.large
+    instancetype.kubevirt.io/default-preference: centos.stream9
+  annotations:
+    cdi.kubevirt.io/storage.bind.immediate.requested: "true"
+spec:
+  source:
+    pvc:
+      name: centos-web
+      namespace: openshift-virtualization-os-images
